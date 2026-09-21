@@ -17,16 +17,15 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.static('public'));
 
-// ሚስጥራዊ መረጃዎችን ከ .env ፋይል ማንበብ
-// የቦት ቶከን እና አድሚን አይዲ በቀጥታ በኮዱ ውስጥ
-const TELEGRAM_BOT_TOKEN = "8729162609:AAHgOWw8iWhFVqoiCXkJbICMawoho7R5tD0";
-const ADMIN_ID = "8648848107";
-const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';
+// ሚስጥራዊ መረጃዎችን እና የቦት ቶከን ማዋቀር
+const TELEGRAM_BOT_TOKEN = "8729162609:AAHgOWw8iWhFVqoiCXkJbICMawoho7R5tD0";[cite: 3]
+const ADMIN_ID = "8648848107";[cite: 3]
+const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';[cite: 3]
 
 let bot = null;
-if (TOKEN) {
+if (TELEGRAM_BOT_TOKEN) { // ከ "TOKEN" ወደ "TELEGRAM_BOT_TOKEN" ተስተካክሏል
     try {
-        bot = new TelegramBot(TOKEN, {  
+        bot = new TelegramBot(TELEGRAM_BOT_TOKEN, {  
             polling: {
                 interval: 300,
                 autoStart: true,
@@ -138,7 +137,7 @@ if (bot) {
                             `💸 /withdraw - 📤 ያሸነፉትን ገንዘብ ወጪ ለማድረግ\n` +
                             `─────────────────────`;
 
-        if (chatId.toString() === ADMIN_CHAT_ID) {
+        if (chatId.toString() === ADMIN_ID) {
             welcomeMessage += `\n\n👑 **የአድሚን መቆጣጠሪያ ፓነል፡**\n` +
                               `📊 /admin - አጠቃላይ ድምር መረጃዎችን ለማየት\n` +
                               `📋 /pending - የሚጠብቁ የገንዘብ ጥያቄዎችን ለማጽደቅ`;
@@ -195,7 +194,7 @@ if (bot) {
 
     bot.onText(/\/admin/, async (msg) => {
         const chatId = msg.chat.id;
-        if (chatId.toString() !== ADMIN_CHAT_ID) return bot.sendMessage(chatId, 'ይህንን ትዕዛዝ መጠቀም የሚችሉት አድሚኖች ብቻ ናቸው!');
+        if (chatId.toString() !== ADMIN_ID) return bot.sendMessage(chatId, 'ይህንን ትዕዛዝ መጠቀም የሚችሉት አድሚኖች ብቻ ናቸው!');
 
         try {
             const usersRes = await pool.query('SELECT COUNT(*) FROM users');
@@ -212,7 +211,7 @@ if (bot) {
 
     bot.onText(/\/pending/, async (msg) => {
         const chatId = msg.chat.id;
-        if (chatId.toString() !== ADMIN_CHAT_ID) return;
+        if (chatId.toString() !== ADMIN_ID) return;
 
         try {
             const pendingRes = await pool.query(`
@@ -386,7 +385,7 @@ function startGlobalLobbyCountdown(roomId) {
             if (room.players.size < 1 || selectedBoardsCount < 1) {
                 room.countdown = 30;
                 room.startTime = Date.now() + 30000;
-                io.to(roomId).emit('notification', { message: 'በቂ ተጫዋች ወይም የተመረጠ ቦርድ ስለሌለ ሰዓቱ እንደገና ከ 30 ጀምሮ ቆጠራ ጀምሯል...' });
+                io.to(roomId).emit('notification', { message: 'በቂ ተጫዋች ወይም የተመረطة ቦርድ ስለሌለ ሰዓቱ እንደገና ከ 30 ጀምሮ ቆጠራ ጀምሯል...' });
             } else {
                 startRoomGame(roomId);
             }

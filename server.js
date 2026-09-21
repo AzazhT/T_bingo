@@ -17,13 +17,13 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.static('public'));
 
-// ሚስጥራዊ መረጃዎችን እና የቦት ቶከን ማዋቀር
-const TELEGRAM_BOT_TOKEN = "8729162609:AAHgOWw8iWhFVqoiCXkJbICMawoho7R5tD0";[cite: 3]
-const ADMIN_ID = "8648848107";[cite: 3]
-const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';[cite: 3]
+// የቦት ቶከን እና አድሚን አይዲ
+const TELEGRAM_BOT_TOKEN = "8729162609:AAGukTooUSl3lFFajd4dfoI1jqLUyvU3RGY";
+const ADMIN_ID = "8648848107";
+const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';
 
 let bot = null;
-if (TELEGRAM_BOT_TOKEN) { // ከ "TOKEN" ወደ "TELEGRAM_BOT_TOKEN" ተስተካክሏል
+if (TELEGRAM_BOT_TOKEN) {
     try {
         bot = new TelegramBot(TELEGRAM_BOT_TOKEN, {  
             polling: {
@@ -166,7 +166,7 @@ if (bot) {
 
     bot.onText(/\/deposit/, (msg) => {
         const chatId = msg.chat.id;
-        bot.sendMessage(chatId, `💳 **የዲፖዚት መመሪያ**\n\nበቴሌብር ወይም በባንክ ገንዘብ ገቢ በማድረግ በዌብሳይቱ (App) በኩል የዲፖዚት ጥያቄ ይላኩ።`, { parse_mode: 'Markdown' });
+        bot.sendMessage(chatId, `💳 **የዲፖዚት መመሪያ**\n\nበቴሌብር ወይም በባንክ ገንዘብ ገቢ በማድረግ በዌብሳይቱ (App) በኩል የዲፖዚት ጥያቄ ይላቁ።`, { parse_mode: 'Markdown' });
     });
 
     bot.onText(/\/withdraw/, (msg) => {
@@ -385,7 +385,7 @@ function startGlobalLobbyCountdown(roomId) {
             if (room.players.size < 1 || selectedBoardsCount < 1) {
                 room.countdown = 30;
                 room.startTime = Date.now() + 30000;
-                io.to(roomId).emit('notification', { message: 'በቂ ተጫዋች ወይም የተመረطة ቦርድ ስለሌለ ሰዓቱ እንደገና ከ 30 ጀምሮ ቆጠራ ጀምሯል...' });
+                io.to(roomId).emit('notification', { message: 'በቂ ተጫዋች ወይም የተመረጠ ቦርድ ስለሌለ ሰዓቱ እንደገና ከ 30 ጀምሮ ቆጠራ ጀምሯል...' });
             } else {
                 startRoomGame(roomId);
             }

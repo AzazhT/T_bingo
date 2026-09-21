@@ -18,8 +18,9 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ሚስጥራዊ መረጃዎችን ከ .env ፋይል ማንበብ
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const ADMIN_CHAT_ID = '686733543'; // የአድሚንዎ ቻት አይዲ
+// የቦት ቶከን እና አድሚን አይዲ በቀጥታ በኮዱ ውስጥ
+const TELEGRAM_BOT_TOKEN = "8729162609:AAHgOWw8iWhFVqoiCXkJbICMawoho7R5tD0";
+const ADMIN_ID = "8648848107";
 const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';
 
 let bot = null;

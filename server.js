@@ -3,13 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
-
-// የዳታቤዝ ትስስር (Pool)
-const { Pool } = require('pg');
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || "postgres://USERNAME:PASSWORD@HOST:PORT/DATABASE_NAME",
-    ssl: { rejectUnauthorized: false }
-});
+const pool = require('./database');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,7 +22,6 @@ const TELEGRAM_BOT_TOKEN = "8729162609:AAGukTooUSl3lFFajd4dfoI1jqLUyvU3RGY";
 const ADMIN_ID = "8648848107";
 const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';
 
-// 401 ስህተትን ለማስቀረት የፖሊንግ ስህተት ማስተካከያ ያለው ቦት ማስጀመር
 let bot = null;
 if (TELEGRAM_BOT_TOKEN) {
     try {
@@ -104,7 +97,7 @@ app.post('/api/place-bet', async (req, res) => {
 });
 
 app.post('/api/request-transaction', async (req, res) => {
-    const { identifier, type, amount, details } = req.body;
+    const { identifier, type, amount } = req.body;
     const tx_id = 'TX' + Math.floor(100000 + Math.random() * 900000);
     try {
         await pool.query(
@@ -291,6 +284,31 @@ io.on('connection', (socket) => {
 
             io.to(roomId).emit('boardSelected', { boardNumber, socketId: socket.id });
             socket.emit('gameJoinSuccess', { boardNumber, prizePool: currentPrizePool });
+        }
+    });
+
+    socket.on('claimBingo', async (data) => {
+        const { identifier, winAmount, roomId } = data;
+        let room = activeRooms[roomId];
+        
+        if (room && room.status === 'playing') {
+            room.status = 'ended';
+            if (room.gameInterval) clearInterval(room.gameInterval);
+            if (room.timer) clearInterval(room.timer);
+
+            let finalWinAmount = calculatePrizePool(room) || winAmount;
+
+            try {
+                const userRes = await pool.query('SELECT balance FROM users WHERE identifier = $1', [identifier]);
+                if (userRes.rows.length > 0) {
+                    let newBal = parseFloat(userRes.rows[0].balance) + parseFloat(finalWinAmount);
+                    await pool.query('UPDATE users SET balance = $1 WHERE identifier = $2', [newBal, identifier]);
+                    
+                    io.to(roomId).emit('gameOver', { message: `🎉 ተጫዋች BINGO አሸንፏል! ${finalWinAmount} ብር ተሸልሟል።` });
+                }
+            } catch (err) {
+                console.error('Bingo claim error:', err);
+            }
         }
     });
 

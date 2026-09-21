@@ -1,0 +1,16 @@
+{
+  "name": "T-bingo",
+  "version": "1.0.0",
+  "description": "Wana Bingo Telegram Mini App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.2",
+    "mongoose": "^8.0.0",
+    "node-telegram-bot-api": "^0.63.0",
+    "pg": "^8.23.0",
+    "socket.io": "^4.8.3"
+  }
+}

@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const TelegramBot = require('node-telegram-bot-api');
+const path = require('path'); // 👈 1. ይህንን ማካተት ግዴታ ነው
 const pool = require('./database');
 
 const app = express();
@@ -14,7 +15,13 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
-app.use(express.static('public'));
+// 👈 2. ሰርቨሩ የ public ፎልደሩን በይፋ እንዲጠቀም ማድረግ
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 👈 3. ተጠቃሚው ወደ ሊንኩ ሲገባ በቀጥታ index.html ን እንዲያሳይ ማድረግ
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const TOKEN = '8698997396:AAEtZYRICBruFiUq5Hrs5HHgSA82qf0Hq7s';
 const ADMIN_CHAT_ID = '686733543';

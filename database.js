@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -28,7 +27,6 @@ const initDb = async () => {
             );
         `);
 
-        // id የሚባል ኮሎም ከሌለ በራሱ እንዲጨምር (ALTER TABLE) ማድረግ
         await pool.query(`
             ALTER TABLE transactions ADD COLUMN IF NOT EXISTS id SERIAL;
         `);
@@ -42,48 +40,3 @@ const initDb = async () => {
 initDb();
 
 module.exports = pool;
-=======
-const { Pool } = require('pg');
-
-const pool = new Pool({
-    connectionString: 'postgresql://neondb_owner:npg_2dumJ9LvZtEI@ep-green-sea-b5drpdm6-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
-    ssl: { rejectUnauthorized: false }
-});
-
-const initDb = async () => {
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                identifier VARCHAR(255) PRIMARY KEY,
-                name VARCHAR(255),
-                username VARCHAR(255),
-                balance NUMERIC(10, 2) DEFAULT 0.00,
-                phone VARCHAR(50) DEFAULT 'አልተጋራም'
-            );
-        `);
-
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS transactions (
-                tx_id VARCHAR(50) PRIMARY KEY,
-                identifier VARCHAR(255),
-                type VARCHAR(50),
-                amount NUMERIC(10, 2),
-                handled BOOLEAN DEFAULT FALSE
-            );
-        `);
-
-        // id የሚባል ኮሎም ከሌለ በራሱ እንዲጨምር (ALTER TABLE) ማድረግ
-        await pool.query(`
-            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS id SERIAL;
-        `);
-
-        console.log("Database & Tables connected/created successfully!");
-    } catch (err) {
-        console.error("Database connection error:", err);
-    }
-};
-
-initDb();
-
-module.exports = pool;
->>>>>>> 24e92af8e5ca317858ee8e42013f62ac235dac28

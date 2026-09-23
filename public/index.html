@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="am">
 <head>
@@ -641,4 +642,649 @@
         }
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Wana Bingo</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #121921; color: #ffffff; padding-bottom: 75px; user-select: none; }
+        
+        .header { background: #1e2a38; padding: 12px 16px; border-bottom: 2px solid #0088cc; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 18px; font-weight: bold; color: #40b3e0; display: flex; align-items: center; gap: 6px; }
+        .balance-badge { background: #2b3a4a; padding: 6px 14px; border-radius: 20px; font-weight: bold; color: #4caf50; font-size: 14px; border: 1px solid #3b4e62; }
+        
+        .container { padding: 12px; max-width: 500px; margin: 0 auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .game-step { display: none; }
+        .game-step.active { display: block; }
+
+        .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #1e2a38; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #2b3a4a; z-index: 1000; }
+        .nav-item { color: #7f91a4; text-decoration: none; font-size: 11px; text-align: center; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #40b3e0; font-weight: bold; }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+
+        .card { background: #1e2a38; padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #2b3a4a; }
+        .btn { background: #0088cc; color: #fff; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 15px; cursor: pointer; font-weight: bold; }
+        .btn-bingo { background: #e53935; font-size: 18px; padding: 14px; border-radius: 25px; box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4); }
+        
+        input, textarea { width: 100%; padding: 12px; margin-top: 8px; background: #121921; border: 1px solid #3b4e62; color: #fff; border-radius: 8px; outline: none; }
+
+        .header-box { text-align: center; padding: 10px 0; color: #fff; }
+        .header-box h2 { font-size: 18px; margin-bottom: 5px; color: #ffca28; }
+        .header-box p { font-size: 12px; color: #7f91a4; }
+        
+        .bet-selection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .bet-grid-btn { padding: 22px 10px; font-size: 20px; font-weight: bold; background: #2b3a4a; color: #ffca28; border: 2px solid #3b4e62; border-radius: 12px; cursor: pointer; text-align: center; }
+
+        .top-stats { display: flex; justify-content: space-between; gap: 4px; margin-bottom: 10px; }
+        .stat-card { background: #1e2a38; border: 1px solid #2b3a4a; color: #7f91a4; padding: 6px 4px; border-radius: 8px; text-align: center; font-size: 10px; font-weight: bold; flex: 1; }
+        .stat-card span { display: block; font-size: 13px; color: #ffca28; margin-top: 2px; }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; background: #121921; padding: 6px; border-radius: 10px; max-height: 280px; overflow-y: auto; border: 1px solid #2b3a4a; }
+        .card-btn { background: #2b3a4a; color: #fff; border: none; padding: 8px 0; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer; position: relative; }
+        .card-btn.active { background: #4caf50; color: #fff; box-shadow: 0 0 8px #4caf50; }
+        .card-btn.taken { background: #e53935; color: #fff; cursor: not-allowed; opacity: 0.7; }
+
+        .bottom-section { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 10px; }
+        .preview-ticket { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #121921; padding: 4px; border-radius: 6px; width: 160px; border: 1px solid #2b3a4a; }
+        .preview-cell { background: #2b3a4a; color: #fff; font-size: 10px; font-weight: bold; text-align: center; padding: 5px 0; border-radius: 3px; }
+        .preview-cell.free { background: #4caf50; color: #fff; }
+
+        .game-layout { display: flex; gap: 6px; justify-content: space-between; }
+        .called-grid-container { background: #1e2a38; padding: 6px; border-radius: 8px; width: 48%; border: 1px solid #2b3a4a; }
+        .bingo-header-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 4px; text-align: center; font-weight: bold; font-size: 11px; }
+        
+        .b-header { background: #ffca28; color: #000; border-radius: 3px; padding: 2px 0; }
+        .i-header { background: #4caf50; color: #fff; border-radius: 3px; padding: 2px 0; }
+        .n-header { background: #0088cc; color: #fff; border-radius: 3px; padding: 2px 0; }
+        .g-header { background: #e53935; color: #fff; border-radius: 3px; padding: 2px 0; }
+        .o-header { background: #9c27b0; color: #fff; border-radius: 3px; padding: 2px 0; }
+
+        .called-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+        .grid-num { background: #121921; color: #556b82; font-size: 9px; text-align: center; padding: 3px 0; border-radius: 3px; font-weight: bold; }
+        .grid-num.called { background: #ffca28; color: #000; }
+
+        .right-panel { width: 50%; display: flex; flex-direction: column; gap: 6px; }
+        .countdown-box { background: #1e2a38; color: #fff; padding: 6px 8px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; border: 1px solid #2b3a4a; }
+        .current-call-box { background: #1e2a38; padding: 6px 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #0088cc; }
+        .call-text { font-size: 11px; font-weight: bold; color: #7f91a4; }
+        .call-circle { background: #ffca28; color: #000; font-weight: 900; padding: 6px 10px; border-radius: 50%; font-size: 14px; }
+
+        .recent-calls { display: flex; gap: 3px; overflow-x: auto; background: #121921; padding: 4px; border-radius: 6px; min-height: 32px; align-items: center; border: 1px solid #2b3a4a; }
+        .recent-ball { background: #0088cc; color: white; font-size: 9px; font-weight: bold; padding: 3px 6px; border-radius: 50%; white-space: nowrap; }
+
+        .user-board { background: #1e2a38; padding: 6px; border-radius: 8px; border: 1px solid #2b3a4a; }
+        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-top: 3px; }
+        .board-cell { background: #2b3a4a; color: #fff; font-size: 11px; font-weight: bold; text-align: center; padding: 6px 0; border-radius: 3px; cursor: pointer; }
+        .board-cell.free, .board-cell.marked { background: #4caf50; color: white; }
+        .board-footer { text-align: center; font-size: 9px; color: #7f91a4; margin-top: 4px; font-weight: bold; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-card { background: #1e2a38; width: 85%; max-width: 340px; padding: 16px; border-radius: 12px; text-align: center; border: 1px solid #3b4e62; color: white; }
+        .winner-banner { background: #ffca28; color: #000; padding: 8px; border-radius: 8px; font-size: 20px; font-weight: 900; margin-bottom: 8px; }
+        .play-again-btn { background: #4caf50; color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-top: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">🎲 <span>Wana Bingo</span></div>
+        <div class="balance-badge">💵 <span id="userBalanceDisplay">0.00</span> ETB</div>
+    </div>
+
+    <div class="container">
+        <div id="gameTab" class="tab-content active">
+            <div id="gameStepBet" class="game-step active">
+                <div class="header-box">
+                    <h2>እንኳን ወደ Wana Bingo በደህና መጡ!</h2>
+                    <p>ለመጀመር የሚፈልጉትን የጨዋታ ዋጋ ይምረጡ፡</p>
+                </div>
+                <div class="bet-selection-grid">
+                    <button class="bet-grid-btn" onclick="selectBet(20)">20 ብር</button>
+                    <button class="bet-grid-btn" onclick="selectBet(50)">50 ብር</button>
+                    <button class="bet-grid-btn" onclick="selectBet(100)">100 ብር</button>
+                    <button class="bet-grid-btn" onclick="selectBet(500)">500 ብር</button>
+                </div>
+            </div>
+
+            <div id="gameStepCards" class="game-step">
+                <div class="top-stats">
+                    <div class="stat-card">Wallet<span id="walletDisplay">0.00</span></div>
+                    <div class="stat-card">Bet<span id="betDisplay">20</span></div>
+                    <div class="stat-card">Active<span id="activePlayersDisplay">0</span></div>
+                </div>
+
+                <div class="cards-grid" id="cardsGrid"></div>
+
+                <div class="bottom-section">
+                    <div class="preview-ticket" id="previewTicket"></div>
+                    <div class="controls">
+                        <button class="btn" onclick="goToGame()">Start game (Join)</button>
+                    </div>
+                </div>
+                <button class="btn" style="width: 100%; margin-top: 8px; background: #2b3a4a;" onclick="goToBetStep()">‹ ተመለስ (Back)</button>
+            </div>
+
+            <div id="gameStepLive" class="game-step">
+                <div class="top-stats">
+                    <div class="stat-card">Room<span id="gameIdDisplay">--</span></div>
+                    <div class="stat-card">Derash<span id="derashDisplay">0.0</span></div>
+                    <div class="stat-card">Active<span id="activePlayersDisplayLive">0</span></div>
+                    <div class="stat-card">Bet<span id="liveBetDisplay">20</span></div>
+                    <div class="stat-card">Call<span id="callCount">0</span></div>
+                </div>
+
+                <div class="game-layout">
+                    <div class="called-grid-container">
+                        <div class="bingo-header-row">
+                            <div class="b-header">B</div><div class="i-header">I</div><div class="n-header">N</div><div class="g-header">G</div><div class="o-header">O</div>
+                        </div>
+                        <div class="called-grid" id="calledGrid"></div>
+                    </div>
+
+                    <div class="right-panel">
+                        <div class="countdown-box">
+                            <span>Lobby Timer</span>
+                            <span id="countdownText" style="color:#ffca28;">30s</span>
+                        </div>
+
+                        <div class="current-call-box">
+                            <span class="call-text">Current Call</span>
+                            <div class="call-circle" id="currentCallCircle">-</div>
+                        </div>
+
+                        <div class="recent-calls" id="recentCalls"></div>
+
+                        <div class="user-board">
+                            <div class="bingo-header-row">
+                                <div class="b-header">B</div><div class="i-header">I</div><div class="n-header">N</div><div class="g-header">G</div><div class="o-header">O</div>
+                            </div>
+                            <div class="board-grid" id="userBoardGrid"></div>
+                            <div class="board-footer" id="boardFooterText">Board number 1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-bingo" style="margin-top: 10px;" onclick="checkPlayerBingo()">🎉 BINGO!</button>
+                <button class="btn" style="background: #e53935; margin-top: 8px;" onclick="leaveGame()">Leave / Exit</button>
+            </div>
+        </div>
+
+        <div id="walletTab" class="tab-content">
+            <div class="card">
+                <h3>💳 ብር ገቢ ማድረግ (Deposit)</h3>
+                <p style="font-size: 12px; color: #7f91a4; margin: 6px 0;">Telebirr Number: <b>0915503379 (Mulualem)</b></p>
+                <input type="number" id="depAmount" placeholder="የብር መጠን (ETB)">
+                <textarea id="depSMS" rows="3" placeholder="የቴሌብር SMS እዚህ ይልጠፉ"></textarea>
+                <button class="btn" style="margin-top: 10px; background: #4caf50;" onclick="submitDeposit()">ገቢ አድርግ</button>
+            </div>
+        </div>
+
+        <div id="profileTab" class="tab-content">
+            <div class="card">
+                <h3>👤 የተጫዋች መረጃ</h3>
+                <p style="margin-top: 12px;">ስም: <b id="profName">--</b></p>
+                <p style="margin-top: 6px;">ID: <b id="profId">--</b></p>
+                <p style="margin-top: 6px;">ስልክ: <b id="profPhone">--</b></p>
+                <button class="btn" style="margin-top: 12px; background: #0088cc;" onclick="requestPhoneNumber()">ስልክ ቁጥር አጋራ (Share Phone)</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="winnerModal">
+        <div class="modal-card">
+            <div class="winner-banner">🎉 BINGO!</div>
+            <p style="margin-bottom:8px; font-weight:bold; font-size:13px;" id="winnerText">እንኳን ደስ አለዎት! አሸንፈዋል።</p>
+            <button class="play-again-btn" onclick="closeModal('winnerModal')">ቀጥል (Continue)</button>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div class="nav-item active" onclick="switchTab('gameTab', this)"><div class="nav-icon">🎮</div>ጨዋታ</div>
+        <div class="nav-item" onclick="switchTab('walletTab', this)"><div class="nav-icon">💳</div>ዋሌት</div>
+        <div class="nav-item" onclick="switchTab('profileTab', this)"><div class="nav-icon">👤</div>ፕሮፋይል</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const socket = io();
+        const telegramUser = tg.initDataUnsafe?.user;
+        let currentUser = {
+            id: telegramUser ? String(telegramUser.id) : "test_user_" + Math.floor(Math.random()*1000),
+            first_name: telegramUser ? (telegramUser.first_name + (telegramUser.last_name ? ' ' + telegramUser.last_name : '')) : "Bingo Player",
+            username: telegramUser ? telegramUser.username : "test_user"
+        };
+
+        let userWallet = 0.00;
+        let currentBet = 20;
+        let currentActivePlayers = 0;
+        let currentDerashAmount = 0.0;
+        
+        let allCardsData = {};
+        let selectedCardId = 1;
+        let currentRoomId = null;
+        let drawnNumbers = [];
+        let playerMarkedBoard = Array(5).fill(null).map(() => Array(5).fill(false));
+        let roomSelectedBoards = {};
+        let globalStartTime = null;
+        let clientTimerInterval = null;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchUserData();
+        });
+
+        async function fetchUserData() {
+            try {
+                const res = await fetch('/api/get-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: currentUser.id, name: currentUser.first_name, username: currentUser.username })
+                });
+                const data = await res.json();
+                if(data.success && data.user) {
+                    userWallet = parseFloat(data.user.balance);
+                    updateHeaderStats();
+                    document.getElementById('profName').innerText = data.user.name;
+                    document.getElementById('profId').innerText = data.user.identifier;
+                    document.getElementById('profPhone').innerText = data.user.phone || 'አልተጋራም';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function updateDerashUI(data) {
+            if (typeof data.activePlayersCount !== 'undefined') {
+                currentActivePlayers = data.activePlayersCount;
+                document.getElementById('activePlayersDisplay').innerText = currentActivePlayers;
+                document.getElementById('activePlayersDisplayLive').innerText = currentActivePlayers;
+            }
+            
+            if (typeof data.derashAmount !== 'undefined') {
+                currentDerashAmount = parseFloat(data.derashAmount);
+            } else if (typeof data.derash !== 'undefined') {
+                currentDerashAmount = parseFloat(data.derash);
+            } else if (typeof data.prizePool !== 'undefined') {
+                currentDerashAmount = parseFloat(data.prizePool);
+            } else {
+                currentDerashAmount = currentActivePlayers * currentBet * 0.90; 
+            }
+            
+            document.getElementById('derashDisplay').innerText = currentDerashAmount.toFixed(1);
+        }
+
+        socket.on('playersUpdate', (data) => {
+            if (data) updateDerashUI(data);
+        });
+
+        socket.on('activePlayersUpdate', (data) => {
+            if (data) updateDerashUI(data);
+        });
+
+        socket.on('assignedRoom', (data) => {
+            currentRoomId = data.roomId;
+            document.getElementById('gameIdDisplay').innerText = currentRoomId;
+            globalStartTime = data.startTime;
+            
+            updateDerashUI(data);
+            startClientCountdown();
+
+            if (data.selectedBoards) {
+                roomSelectedBoards = data.selectedBoards;
+                updateBoardsUI();
+            }
+        });
+
+        socket.on('countdownUpdate', (data) => {
+            globalStartTime = data.startTime;
+            updateDerashUI(data);
+        });
+
+        function startClientCountdown() {
+            if (clientTimerInterval) clearInterval(clientTimerInterval);
+            clientTimerInterval = setInterval(() => {
+                if (!globalStartTime) return;
+                let remaining = Math.max(0, Math.floor((globalStartTime - Date.now()) / 1000));
+                document.getElementById('countdownText').innerText = `${remaining}s`;
+
+                if (remaining <= 0) clearInterval(clientTimerInterval);
+            }, 1000);
+        }
+
+        socket.on('gameStarted', (data) => {
+            document.getElementById('countdownText').innerText = "Started!";
+            if (clientTimerInterval) clearInterval(clientTimerInterval);
+            if (data && data.prizePool) {
+                currentDerashAmount = parseFloat(data.prizePool);
+                document.getElementById('derashDisplay').innerText = currentDerashAmount.toFixed(1);
+            }
+            updateBoardsUI();
+        });
+
+        socket.on('gameAlreadyStarted', (data) => {
+            alert(data.message);
+            showGameStep('gameStepBet');
+        });
+
+        socket.on('boardTempSelected', (data) => {
+            selectedCardId = data.boardNumber;
+            updateBoardsUI();
+            displayPreview(selectedCardId);
+        });
+
+        socket.on('boardSelected', (data) => {
+            roomSelectedBoards[data.boardNumber] = data.socketId;
+            updateBoardsUI();
+        });
+
+        socket.on('boardReleased', (data) => {
+            delete roomSelectedBoards[data.boardNumber];
+            updateBoardsUI();
+        });
+
+        socket.on('gameJoinSuccess', (data) => {
+            selectedCardId = data.boardNumber;
+            if (data.prizePool) {
+                currentDerashAmount = parseFloat(data.prizePool);
+                document.getElementById('derashDisplay').innerText = currentDerashAmount.toFixed(1);
+            }
+            displayPreview(selectedCardId);
+            updateBoardsUI();
+        });
+
+        socket.on('boardSelectError', (data) => {
+            alert(data.message);
+        });
+
+        socket.on('numberDrawn', (data) => {
+            let rand = data.number;
+            drawnNumbers = data.drawnHistory || [];
+            document.getElementById('callCount').innerText = drawnNumbers.length;
+
+            let letter = rand <= 15 ? 'B' : rand <= 30 ? 'I' : rand <= 45 ? 'N' : rand <= 60 ? 'G' : 'O';
+            let callText = `${letter}-${rand}`;
+            document.getElementById('currentCallCircle').innerText = callText;
+
+            let gridCell = document.getElementById(`grid-num-${rand}`);
+            if(gridCell) gridCell.classList.add('called');
+
+            let ball = document.createElement('div');
+            ball.className = 'recent-ball';
+            ball.innerText = callText;
+            document.getElementById('recentCalls').prepend(ball);
+        });
+
+        socket.on('gameOver', (data) => {
+            document.getElementById('winnerText').innerText = data.message;
+            document.getElementById('winnerModal').style.display = 'flex';
+        });
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function showGameStep(stepId) {
+            document.querySelectorAll('.game-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        function selectBet(amount) {
+            currentBet = amount;
+            showGameStep('gameStepCards');
+            initPage1();
+            socket.emit('joinLobby', { betAmount: amount });
+        }
+
+        function goToBetStep() { 
+            showGameStep('gameStepBet'); 
+        }
+
+        function updateHeaderStats() {
+            document.getElementById('userBalanceDisplay').innerText = userWallet.toFixed(2);
+            document.getElementById('walletDisplay').innerText = userWallet.toFixed(2);
+            document.getElementById('betDisplay').innerText = currentBet;
+            document.getElementById('liveBetDisplay').innerText = currentBet;
+            
+            if(currentActivePlayers === 0) {
+                document.getElementById('derashDisplay').innerText = "0.0";
+            } else {
+                document.getElementById('derashDisplay').innerText = currentDerashAmount.toFixed(1);
+            }
+        }
+
+        function generateBingoCard() {
+            let ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
+            let cols = [];
+            for(let c = 0; c < 5; c++) {
+                let col = [];
+                let min = ranges[c][0], max = ranges[c][1];
+                while(col.length < 5) {
+                    let rand = Math.floor(Math.random() * (max - min + 1)) + min;
+                    if(!col.includes(rand)) col.push(rand);
+                }
+                cols.push(col);
+            }
+            let card = [];
+            for(let r = 0; r < 5; r++) {
+                let row = [];
+                let c = 0;
+                while(c < 5) {
+                    row.push(r === 2 && c === 2 ? "*" : cols[c][r]);
+                    c++;
+                }
+                card.push(row);
+            }
+            return card;
+        }
+
+        function initPage1() {
+            const cardsGrid = document.getElementById('cardsGrid');
+            cardsGrid.innerHTML = '';
+            for(let i = 1; i <= 100; i++) {
+                if(!allCardsData[i]) {
+                    allCardsData[i] = generateBingoCard();
+                }
+                const btn = document.createElement('button');
+                btn.className = `card-btn ${i === selectedCardId ? 'active' : ''}`;
+                btn.id = `card-btn-${i}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    if (roomSelectedBoards[i] && roomSelectedBoards[i] !== socket.id) {
+                        alert('ይህ ቦርድ በሌላ ተጫዋች ተይዟል!');
+                        return;
+                    }
+                    socket.emit('selectBoardTemp', { roomId: currentRoomId, boardNumber: i });
+                };
+                cardsGrid.appendChild(btn);
+            }
+            updateBoardsUI();
+            displayPreview(selectedCardId);
+            updateHeaderStats();
+        }
+
+        function updateBoardsUI() {
+            for(let i = 1; i <= 100; i++) {
+                const btn = document.getElementById(`card-btn-${i}`);
+                if(btn) {
+                    btn.classList.remove('active', 'taken');
+                    if(roomSelectedBoards[i]) {
+                        if(roomSelectedBoards[i] === socket.id) {
+                            btn.classList.add('active'); 
+                        } else {
+                            btn.classList.add('taken');  
+                        }
+                    } else if(i === selectedCardId) {
+                        btn.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        function displayPreview(id) {
+            selectedCardId = id;
+            const previewTicket = document.getElementById('previewTicket');
+            previewTicket.innerHTML = '';
+            if(allCardsData[id]) {
+                allCardsData[id].forEach(row => {
+                    row.forEach(val => {
+                        const cell = document.createElement('div');
+                        cell.className = `preview-cell ${val === '*' ? 'free' : ''}`;
+                        cell.innerText = val;
+                        previewTicket.appendChild(cell);
+                    });
+                });
+            }
+        }
+
+        async function goToGame() {
+            if (userWallet < currentBet) return alert('በቂ ባላንስ የለዎትም!');
+            
+            try {
+                const res = await fetch('/api/place-bet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: currentUser.id, amount: currentBet })
+                });
+                const data = await res.json();
+                if (!data.success) return alert(data.message);
+                userWallet = data.newBalance;
+            } catch (e) { return alert('የኔትወርክ ስህተት።'); }
+
+            socket.emit('startPlayerGame', { roomId: currentRoomId, boardNumber: selectedCardId });
+
+            updateHeaderStats();
+
+            const calledGrid = document.getElementById('calledGrid');
+            calledGrid.innerHTML = '';
+            for (let row = 0; row < 15; row++) {
+                for (let col = 0; col < 5; col++) {
+                    let num = (col * 15) + (row + 1);
+                    let cell = document.createElement('div');
+                    cell.className = 'grid-num';
+                    cell.id = `grid-num-${num}`;
+                    cell.innerText = num;
+                    calledGrid.appendChild(cell);
+                }
+            }
+
+            playerMarkedBoard = Array(5).fill(null).map(() => Array(5).fill(false));
+            playerMarkedBoard[2][2] = true;
+            renderInteractiveBoard();
+
+            drawnNumbers = [];
+            document.getElementById('recentCalls').innerHTML = '';
+            document.getElementById('currentCallCircle').innerText = '-';
+            document.getElementById('callCount').innerText = '0';
+            document.getElementById('boardFooterText').innerText = `Board number ${selectedCardId}`;
+
+            showGameStep('gameStepLive');
+        }
+
+        function renderInteractiveBoard() {
+            const userBoardGrid = document.getElementById('userBoardGrid');
+            userBoardGrid.innerHTML = '';
+            const card = allCardsData[selectedCardId];
+            if(card) {
+                card.forEach((row, r) => {
+                    row.forEach((val, c) => {
+                        let cell = document.createElement('div');
+                        cell.className = `board-cell ${val === '*' ? 'free' : ''}`;
+                        if(playerMarkedBoard[r][c]) cell.classList.add('marked');
+                        cell.innerText = val;
+                        cell.onclick = () => {
+                            if(val !== '*') {
+                                playerMarkedBoard[r][c] = !playerMarkedBoard[r][c];
+                                cell.classList.toggle('marked');
+                            }
+                        };
+                        userBoardGrid.appendChild(cell);
+                    });
+                });
+            }
+        }
+
+        function checkPlayerBingo() {
+            const card = allCardsData[selectedCardId];
+            let isBingo = false;
+            const isValidMark = (r, c) => {
+                let num = card[r][c];
+                return (num === '*' || drawnNumbers.includes(num)) && playerMarkedBoard[r][c];
+            };
+
+            for(let r=0; r<5; r++) if([0,1,2,3,4].every(c => isValidMark(r, c))) isBingo = true;
+            for(let c=0; c<5; c++) if([0,1,2,3,4].every(r => isValidMark(r, c))) isBingo = true;
+            if([0,1,2,3,4].every(i => isValidMark(i, i))) isBingo = true;
+            if([0,1,2,3,4].every(i => isValidMark(i, 4-i))) isBingo = true;
+
+            if(isBingo) {
+                let winAmount = currentDerashAmount > 0 ? currentDerashAmount : (currentBet * 15 * 0.90);
+                socket.emit('claimBingo', { identifier: currentUser.id, winAmount, roomId: currentRoomId });
+            } else {
+                alert("ገና አልሞላም! እባክዎን በደንብ ያረጋግጡ።");
+            }
+        }
+
+        function leaveGame() {
+            document.getElementById('winnerModal').style.display = 'none';
+            showGameStep('gameStepBet');
+            fetchUserData();
+        }
+
+        function closeModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+            leaveGame(); 
+        }
+
+        async function submitDeposit() {
+            const amount = document.getElementById('depAmount').value;
+            const smsText = document.getElementById('depSMS').value;
+            if (!amount || !smsText) return alert('እባክዎን ሁሉንም ያሟሉ!');
+            
+            try {
+                const res = await fetch('/api/request-transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: currentUser.id, type: 'DEPOSIT', amount })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`የዲፖዚት ጥያቄዎ ተልኳል! TxID: ${data.tx_id}`);
+                    document.getElementById('depAmount').value = '';
+                    document.getElementById('depSMS').value = '';
+                }
+            } catch(e) { alert('ስህተት ተፈጥሯል።'); }
+        }
+
+        function requestPhoneNumber() {
+            if (tg.requestContact) {
+                tg.requestContact(async (shared, contact) => {
+                    if (shared && contact) {
+                        await fetch('/api/update-phone', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ identifier: currentUser.id, phone: contact.phone_number })
+                        });
+                        alert('ስልክ ቁጥርዎ ተመዝግቧል!');
+                        fetchUserData();
+                    }
+                });
+            } else {
+                alert('የቴሌግራም አፕሊኬሽን ድጋፍ አያስፈልግም።');
+            }
+        }
+    </script>
+</body>
+>>>>>>> 24e92af8e5ca317858ee8e42013f62ac235dac28
 </html>

@@ -18,9 +18,10 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ትክክለኛው የቴሌግራም ቶከን እና አድሚን አይዲ
-const TELEGRAM_BOT_TOKEN = "8729162609:AAGukTooUSl3lFFajd4dfoI1jqLUyvU3RGY";
+const TELEGRAM_BOT_TOKEN = "8698997396:AAHbZrYI9p-zJaKCee5d8fUlSuVbizAcOOM";
 const ADMIN_ID = "8648848107";
-const WEB_APP_URL = process.env.WEB_APP_URL || 'https://your-new-app-name.onrender.com';
+const WEB_APP_URL = 'https://e-bingo.onrender.com';
+
 
 let bot = null;
 if (TELEGRAM_BOT_TOKEN) {

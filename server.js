@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const TelegramBot = require('node-telegram-bot-api');
-const path = require('path'); // 👈 1. ይህንን ማካተት ግዴታ ነው
+const path = require('path');
 const pool = require('./database');
 
 const app = express();
@@ -15,14 +15,13 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
-// 👈 2. ሰርቨሩ የ public ፎልደሩን በይፋ እንዲጠቀም ማድረግ
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 👈 3. ተጠቃሚው ወደ ሊንኩ ሲገባ በቀጥታ index.html ን እንዲያሳይ ማድረግ
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// 📌 የእርስዎ ትክክለኛ መረጃዎች (ቶክን እና ሊንኮች)
 const TOKEN = '8698997396:AAEtZYRICBruFiUq5Hrs5HHgSA82qf0Hq7s';
 const ADMIN_CHAT_ID = '686733543';
 const WEB_APP_URL = 'https://e-bingo.onrender.com';
@@ -352,16 +351,6 @@ if (bot) {
 // 🎲 CONTINUOUS GAME & SOCKET.IO
 // ==========================================
 
-const mixedTelegramNames = [
-    "Henok", "Robel", "Dawit", "Yonas", "Elias", "Kebede", "Seleshi", "Nati", 
-    "Kaleb", "Bereket", "Amanuel", "Yared", "Tewodros", "Girma", "Biniyam", "Sami",
-    "Hana", "Meti", "Ruta", "Saba", "Bethlehem", "Mahlet", "Meron", "Aster"
-];
-
-function getRandomTelegramName() {
-    return mixedTelegramNames[Math.floor(Math.random() * mixedTelegramNames.length)];
-}
-
 let activeRooms = {}; 
 
 function getActivePlayersCount(room) {
@@ -473,49 +462,6 @@ function startGlobalLobbyCountdown(roomId) {
             }
         }
     }, 1000);
-}
-
-function findWinningLine(card, drawnNums) {
-    let marked = Array(5).fill(false).map(() => Array(5).fill(false));
-    marked[2][2] = true;
-
-    for (let r = 0; r < 5; r++) {
-        for (let c = 0; c < 5; c++) {
-            let val = card[r][c];
-            if (val === '*' || drawnNums.includes(val)) {
-                marked[r][c] = true;
-            }
-        }
-    }
-
-    for(let r=0; r<5; r++) {
-        if([0,1,2,3,4].every(c => marked[r][c])) return { type: 'row', index: r };
-    }
-    for(let c=0; c<5; c++) {
-        if([0,1,2,3,4].every(r => marked[r][c])) return { type: 'col', index: c };
-    }
-    if([0,1,2,3,4].every(i => marked[i][i])) return { type: 'diag1', index: 0 };
-    if([0,1,2,3,4].every(i => marked[i][4-i])) return { type: 'diag2', index: 0 };
-
-    return null;
-}
-
-function generateServerBingoCard() {
-    let ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
-    let card = Array(5).fill(null).map(() => Array(5).fill(0));
-
-    for (let c = 0; c < 5; c++) {
-        let colNums = [];
-        let min = ranges[c][0], max = ranges[c][1];
-        while (colNums.length < 5) {
-            let rand = Math.floor(Math.random() * (max - min + 1)) + min;
-            if (!colNums.includes(rand)) colNums.push(rand);
-        }
-        for (let r = 0; r < 5; r++) {
-            card[r][c] = (r === 2 && c === 2) ? "*" : colNums[r];
-        }
-    }
-    return card;
 }
 
 function startRoomGame(roomId) {

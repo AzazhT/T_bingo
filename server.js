@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 // 📌 የእርስዎ ትክክለኛ መረጃዎች (ቶክን እና ሊንኮች)
 const TOKEN = '8698997396:AAEtZYRICBruFiUq5Hrs5HHgSA82qf0Hq7s';
 const ADMIN_CHAT_ID = '686733543';
-const WEB_APP_URL = 'https://e-bingo.onrender.com';
+const WEB_APP_URL = 'https://t-bingo.onrender.com';             
 
 const userStates = {};
 
